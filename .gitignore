@@ -1,0 +1,16 @@
+.vscode/        # Visual Studio Code 설정 디렉토리
+.idea/          # IntelliJ IDEA 설정 디렉토리
+*.log           # 로그 파일
+*.swp           # Vim 임시 파일
+
+node_modules/   # Node.js 종속성이 설치되는 디렉토리
+package-lock.json  # npm 종속성 잠금 파일
+yarn.lock       # Yarn 종속성 잠금 파일
+
+dist/           # 빌드된 파일이나 디렉토리
+build/          # 빌드된 파일이나 디렉토리
+*.exe           # 실행 파일
+*.jar           # Java JAR 파일
+.env            # 환경 변수 파일
+config.ini      # 설정 파일
+credentials.json  # 인증 정보 파일
