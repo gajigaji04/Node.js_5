@@ -7,11 +7,37 @@ const authMiddleware = require("../middlewares/auth-middleware");
 
 // 회원가입
 router.post("/signup", async (req, res) => {
-  const { nickname, password } = req.body;
+  const { nickname, password, confirm } = req.body;
   const isExistUser = await Users.findOne({ where: { nickname } });
 
+  // user 중복 확인
   if (isExistUser) {
     return res.status(409).json({ message: "이미 존재하는 user입니다." });
+  }
+
+  // 비밀번호 일치 확인
+  if (password !== confirm) {
+    return res.status(409).json({ message: "비밀번호가 일치하지 않습니다." });
+  }
+  // 닉네임 형식 검증
+  // 최소 3자 이상, 알파벳 대소문자(a~z, A~Z), 숫자(0~9)
+  const nicknameRegex = /^[a-zA-Z0-9]{3,}$/;
+  if (!nicknameRegex.test(nickname)) {
+    return res.status(409).json({
+      message:
+        "닉네임은 최소 3자 이상이어야 하며, 알파벳 대소문자와 숫자만 사용할 수 있습니다.",
+    });
+  }
+
+  // 비밀번호 형식 검증
+  // 최소 4자 이상이며, 닉네임과 같은 값이 포함된 경우 회원가입에 실패
+  const passwordRegex =
+    /^(?=.*[a-zA-Z0-9])(?!.*[^\x21-\x7E])(?!.*([a-zA-Z0-9])\1{3}).{4,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(409).json({
+      message:
+        "비밀번호는 최소 4자 이상이어야 하며, 닉네임과 같은 값이 포함될 수 없습니다.",
+    });
   }
 
   const t = await sequelize.transaction({
