@@ -11,31 +11,31 @@ module.exports = (sequelize, DataTypes) => {
   Posts.init(
     {
       postId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: DataTypes.INTEGER,
       },
       UserId: {
-        allowNull: false,
         type: DataTypes.INTEGER,
+        allowNull: false,
       },
       title: {
-        allowNull: false,
         type: DataTypes.STRING,
+        allowNull: false,
       },
       content: {
-        allowNull: false,
         type: DataTypes.STRING,
+        allowNull: false,
       },
       createdAt: {
-        allowNull: false,
         type: DataTypes.DATE,
+        allowNull: false,
         defaultValue: DataTypes.NOW,
       },
       updatedAt: {
-        allowNull: false,
         type: DataTypes.DATE,
+        allowNull: false,
         defaultValue: DataTypes.NOW,
       },
     },

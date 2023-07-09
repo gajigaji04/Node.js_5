@@ -1,5 +1,5 @@
 const express = require("express");
-const { Posts, Likes } = require("../models");
+const { Posts, Likes, Users } = require("../models");
 const authMiddleware = require("../middlewares/auth-middleware");
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.post("/posts", authMiddleware, async (req, res) => {
 router.get("/posts", async (req, res) => {
   try {
     const posts = await Posts.findAll({
-      attributes: ["postId", "userID", "title", "createdAt", "updatedAt"],
+      attributes: ["postId", "UserId", "title", "createdAt", "updatedAt"],
       order: [["createdAt", "DESC"]],
     });
 
@@ -170,7 +170,13 @@ router.get("/posts/like", authMiddleware, async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    return res.status(200).json({ data: likedPosts });
+    const posts = likedPosts.map((likedPost) => likedPost.Post);
+
+    if (posts.length === 0) {
+      return res.status(200).json({ data: [] }); // 빈 배열 반환
+    }
+
+    return res.status(200).json({ data: user });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "서버 오류" });
