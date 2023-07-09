@@ -12,7 +12,7 @@ router.post("/posts", authMiddleware, async (req, res) => {
     UserId: userId,
     title,
     content,
-    nickname, //
+    nickname,
   });
 
   return res.status(201).json({ data: post });
@@ -124,7 +124,6 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
   const { postId } = req.params;
 
   try {
-    // 포스트 찾기
     const post = await Posts.findOne({
       where: { postId },
     });
@@ -133,13 +132,15 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
     }
 
-    // 포스트에 좋아요 등록
     const existingLike = await Likes.findOne({
       where: { UserId: userId, PostId: postId },
     });
 
+    // 게시글 좋아요 추가 및 취소
     if (existingLike) {
-      await existingLike.destroy();
+      await Likes.destroy({
+        where: { UserId: userId, PostId: postId },
+      });
       return res
         .status(200)
         .json({ message: "게시글 좋아요를 취소하였습니다." });
@@ -159,11 +160,13 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
 router.get("/posts/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
 
-  // 좋아요가 등록된 게시글 조회
   try {
     const likedPosts = await Likes.findAll({
       where: { UserId: userId },
-      include: [Posts],
+      include: {
+        model: Posts,
+        attributes: ["postId", "title", "content", "createdAt", "updatedAt"],
+      },
       order: [["createdAt", "DESC"]],
     });
 
