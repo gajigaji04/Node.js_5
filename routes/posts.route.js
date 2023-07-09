@@ -114,4 +114,30 @@ router.delete("/posts/:postId", authMiddleware, async (req, res) => {
   }
 });
 
+// 게시글 좋아요
+router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
+  const { userId } = res.locals.user;
+  const { title, content } = req.body;
+
+  const post = await Posts.create({
+    UserId: userId,
+    title,
+    content,
+  });
+
+  res.cookie("authorization", `Bearer ${token}`);
+  return res.status(200).json({ message: "로그인 성공" });
+});
+
+// 좋아요 게시글 조회
+router.get("/posts/like", async (req, res) => {
+  const { postId } = req.params;
+  const post = await Posts.findOne({
+    attributes: ["postId", "title", "content", "createdAt", "updatedAt"],
+    where: { postId },
+  });
+
+  return res.status(200).json({ data: post });
+});
+
 module.exports = router;
