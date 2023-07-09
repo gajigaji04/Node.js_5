@@ -1,5 +1,3 @@
-// routes/posts.route.js
-
 const express = require("express");
 const { Posts, Likes } = require("../models");
 const authMiddleware = require("../middlewares/auth-middleware");
@@ -120,23 +118,37 @@ router.delete("/posts/:postId", authMiddleware, async (req, res) => {
   }
 });
 
+// 좋아요 설정
 router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
   const { postId } = req.params;
 
   try {
-    // Find the post by postId
-    const post = await Posts.findByPk(postId);
+    // 포스트 찾기
+    const post = await Posts.findOne({
+      where: { postId },
+    });
 
-    // If the post doesn't exist, return an error
     if (!post) {
       return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
     }
 
-    // TODO: Implement the logic for liking/unliking the post
-    // ...
+    // 포스트에 좋아요 등록
+    const existingLike = await Likes.findOne({
+      where: { UserId: userId, PostId: postId },
+    });
 
-    return res.status(200).json({ message: "게시글 좋아요를 처리했습니다." });
+    if (existingLike) {
+      await existingLike.destroy();
+      return res
+        .status(200)
+        .json({ message: "게시글 좋아요를 취소하였습니다." });
+    } else {
+      await Likes.create({ UserId: userId, PostId: postId });
+      return res
+        .status(200)
+        .json({ message: "게시글 좋아요를 등록하였습니다." });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "서버 오류" });
@@ -147,10 +159,12 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
 router.get("/posts/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
 
+  // 좋아요가 등록된 게시글 조회
   try {
     const likedPosts = await Likes.findAll({
       where: { UserId: userId },
       include: [Posts],
+      order: [["createdAt", "DESC"]],
     });
 
     return res.status(200).json({ data: likedPosts });
