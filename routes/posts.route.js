@@ -42,38 +42,75 @@ router.get("/posts/:postId", async (req, res) => {
 
 // 게시글 수정
 router.put("/posts/:postId", authMiddleware, async (req, res) => {
+  const { postId } = req.params;
+  const { userId } = res.locals.user;
+  const { title, content } = req.body;
+
   try {
-    const postId = req.params.postId;
-    const { title, content } = req.body;
-    const post = await Posts.findByPk(postId);
+    const post = await Posts.findOne({
+      where: { postId },
+    });
+
     if (!post) {
       return res
         .status(404)
         .json({ errorMessage: "게시글을 찾을 수 없습니다." });
     }
-    post.title = title;
-    post.content = content;
-    const updatedPost = await post.save();
-    res.status(200).json({ data: updatedPost });
+
+    if (post.UserId !== userId) {
+      return res
+        .status(403)
+        .json({ errorMessage: "게시글을 수정할 권한이 없습니다." });
+    }
+
+    await Posts.update(
+      { title, content },
+      {
+        where: { postId },
+      }
+    );
+
+    return res.status(200).json({ message: "게시글 수정을 완료하였습니다." });
   } catch (error) {
-    res.status(500).json({ errorMessage: "게시글 수정에 실패하였습니다." });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ errorMessage: "게시글 수정에 실패하였습니다." });
   }
 });
 
 // 게시글 삭제
 router.delete("/posts/:postId", authMiddleware, async (req, res) => {
+  const { postId } = req.params;
+  const { userId } = res.locals.user;
+
   try {
-    const postId = req.params.postId;
-    const post = await Posts.findByPk(postId);
+    const post = await Posts.findOne({
+      where: { postId },
+    });
+
     if (!post) {
       return res
         .status(404)
         .json({ errorMessage: "게시글을 찾을 수 없습니다." });
     }
-    await post.destroy();
-    res.status(200).json({ message: "게시물 삭제를 완료하였습니다." });
+
+    if (post.UserId !== userId) {
+      return res
+        .status(403)
+        .json({ errorMessage: "게시글을 삭제할 권한이 없습니다." });
+    }
+
+    await Posts.destroy({
+      where: { postId },
+    });
+
+    return res.status(200).json({ message: "게시글 삭제를 완료하였습니다." });
   } catch (error) {
-    res.status(500).json({ errorMessage: "게시글 삭제에 실패하였습니다." });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ errorMessage: "게시글 삭제에 실패하였습니다." });
   }
 });
 
