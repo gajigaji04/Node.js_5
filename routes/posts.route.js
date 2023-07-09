@@ -176,7 +176,7 @@ router.get("/posts/like", authMiddleware, async (req, res) => {
       return res.status(200).json({ data: [] }); // 빈 배열 반환
     }
 
-    return res.status(200).json({ data: user });
+    return res.status(200).json({ data: posts });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "서버 오류" });
