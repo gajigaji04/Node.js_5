@@ -24,7 +24,7 @@ router.post("/posts", authMiddleware, async (req, res) => {
 router.get("/posts", async (req, res) => {
   try {
     const posts = await Posts.findAll({
-      attributes: ["postId", "title", "createdAt", "updatedAt"],
+      attributes: ["postId", "userID", "title", "createdAt", "updatedAt"],
       order: [["createdAt", "DESC"]],
     });
 
@@ -120,7 +120,6 @@ router.delete("/posts/:postId", authMiddleware, async (req, res) => {
   }
 });
 
-// 게시글 좋아요
 router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
   const { postId } = req.params;
@@ -145,14 +144,20 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
 });
 
 // 좋아요 게시글 조회
-router.get("/posts/like", async (req, res) => {
-  const { postId } = req.params;
-  const post = await Posts.findOne({
-    attributes: ["postId", "title", "content", "createdAt", "updatedAt"],
-    where: { postId },
-  });
+router.get("/posts/like", authMiddleware, async (req, res) => {
+  const { userId } = res.locals.user;
 
-  return res.status(200).json({ data: post });
+  try {
+    const likedPosts = await Likes.findAll({
+      where: { UserId: userId },
+      include: [Posts],
+    });
+
+    return res.status(200).json({ data: likedPosts });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "서버 오류" });
+  }
 });
 
 module.exports = router;
