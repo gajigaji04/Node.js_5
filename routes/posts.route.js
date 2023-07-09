@@ -1,19 +1,20 @@
 // routes/posts.route.js
 
 const express = require("express");
-const { Posts } = require("../models");
+const { Posts, Likes } = require("../models");
 const authMiddleware = require("../middlewares/auth-middleware");
 const router = express.Router();
 
 // 게시글 생성
 router.post("/posts", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
-  const { title, content } = req.body;
+  const { title, content, nickname } = req.body;
 
   const post = await Posts.create({
     UserId: userId,
     title,
     content,
+    nickname, //
   });
 
   return res.status(201).json({ data: post });
@@ -21,12 +22,17 @@ router.post("/posts", authMiddleware, async (req, res) => {
 
 // 게시글 목록 조회
 router.get("/posts", async (req, res) => {
-  const posts = await Posts.findAll({
-    attributes: ["postId", "title", "createdAt", "updatedAt"],
-    order: [["createdAt", "DESC"]],
-  });
+  try {
+    const posts = await Posts.findAll({
+      attributes: ["postId", "title", "createdAt", "updatedAt"],
+      order: [["createdAt", "DESC"]],
+    });
 
-  return res.status(200).json({ data: posts });
+    return res.status(200).json({ data: posts });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "서버 오류" });
+  }
 });
 
 // 게시글 상세 조회
@@ -117,16 +123,25 @@ router.delete("/posts/:postId", authMiddleware, async (req, res) => {
 // 게시글 좋아요
 router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
-  const { title, content } = req.body;
+  const { postId } = req.params;
 
-  const post = await Posts.create({
-    UserId: userId,
-    title,
-    content,
-  });
+  try {
+    // Find the post by postId
+    const post = await Posts.findByPk(postId);
 
-  res.cookie("authorization", `Bearer ${token}`);
-  return res.status(200).json({ message: "로그인 성공" });
+    // If the post doesn't exist, return an error
+    if (!post) {
+      return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+    }
+
+    // TODO: Implement the logic for liking/unliking the post
+    // ...
+
+    return res.status(200).json({ message: "게시글 좋아요를 처리했습니다." });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "서버 오류" });
+  }
 });
 
 // 좋아요 게시글 조회

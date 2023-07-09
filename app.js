@@ -11,7 +11,7 @@ const PORT = 3018;
 
 async function main() {
   // model을 이용해 데이터베이스에 테이블을 삭제 후 생성합니다.
-  await sequelize.sync({ force: true });
+  await sequelize.sync({ force: process.env.NODE_ENV === "development" });
 }
 
 main();
