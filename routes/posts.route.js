@@ -125,7 +125,7 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
 
   try {
     const post = await Posts.findOne({
-      where: { postId },
+      where: { postId: postId }, // 올바른 게시글 ID로 변경
     });
 
     if (!post) {
@@ -173,7 +173,7 @@ router.get("/posts/like", authMiddleware, async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    const posts = LikedPosts.map((likedPost) => LikedPost.Post);
+    const posts = LikedPosts.map((likedPost) => likedPost.Post);
 
     if (posts.length === 0) {
       return res.status(200).json({ data: [] }); // 빈 배열 반환
