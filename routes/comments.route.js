@@ -1,5 +1,5 @@
 const express = require("express");
-const { Comments } = require("../models");
+const { Comments, Posts } = require("../models");
 const authMiddleware = require("../middlewares/auth-middleware");
 const router = express.Router();
 
@@ -88,21 +88,32 @@ router.put(
   authMiddleware,
   async (req, res) => {
     const { postId, commentId } = req.params;
+    const { userId } = res.locals.user;
     const { comment } = req.body;
 
     try {
-      const [updatedRows] = await Comments.update(
+      const commentToUpdate = await Comments.findOne({
+        where: { commentId, PostId: postId },
+      });
+
+      if (!commentToUpdate) {
+        return res
+          .status(404)
+          .json({ errorMessage: "댓글을 찾을 수 없습니다." });
+      }
+
+      if (commentToUpdate.UserId !== userId) {
+        return res
+          .status(403)
+          .json({ errorMessage: "댓글을 수정할 권한이 없습니다." });
+      }
+
+      await Comments.update(
         { comment },
         {
           where: { commentId, PostId: postId },
         }
       );
-
-      if (updatedRows === 0) {
-        return res
-          .status(404)
-          .json({ errorMessage: "댓글을 찾을 수 없습니다." });
-      }
 
       const updatedComment = await Comments.findOne({
         where: { commentId, PostId: postId },
@@ -132,17 +143,28 @@ router.delete(
   authMiddleware,
   async (req, res) => {
     const { postId, commentId } = req.params;
+    const { userId } = res.locals.user;
 
     try {
-      const deletedComment = await Comments.destroy({
+      const commentToDelete = await Comments.findOne({
         where: { commentId, PostId: postId },
       });
 
-      if (deletedComment === 0) {
+      if (!commentToDelete) {
         return res
           .status(404)
           .json({ errorMessage: "댓글을 찾을 수 없습니다." });
       }
+
+      if (commentToDelete.UserId !== userId) {
+        return res
+          .status(403)
+          .json({ errorMessage: "댓글을 삭제할 권한이 없습니다." });
+      }
+
+      await Comments.destroy({
+        where: { commentId, PostId: postId },
+      });
 
       return res.status(200).json({ message: "댓글 삭제를 완료하였습니다." });
     } catch (error) {
