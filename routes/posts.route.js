@@ -125,7 +125,7 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
 
   try {
     const post = await Posts.findOne({
-      where: { postId: postId }, // 올바른 게시글 ID로 변경
+      where: { postId: postId },
     });
 
     if (!post) {
