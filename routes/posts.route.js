@@ -129,13 +129,16 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
     });
 
     if (!post) {
-      return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+      return res
+        .status(404)
+        .json({ errorMessage: "게시글을 찾을 수 없습니다." });
     }
 
     const existingLike = await Likes.findOne({
       where: { UserId: userId, PostId: postId },
     });
 
+    console.log(existingLike);
     // 게시글 좋아요 추가 및 취소
     if (existingLike) {
       await Likes.destroy({
@@ -152,7 +155,7 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "서버 오류" });
+    return res.status(500).json({ errorMessage: "서버 오류" });
   }
 });
 
@@ -161,7 +164,7 @@ router.get("/posts/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
 
   try {
-    const likedPosts = await Likes.findAll({
+    const LikedPosts = await Likes.findAll({
       where: { UserId: userId },
       include: {
         model: Posts,
@@ -170,7 +173,7 @@ router.get("/posts/like", authMiddleware, async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    const posts = likedPosts.map((likedPost) => likedPost.Post);
+    const posts = LikedPosts.map((likedPost) => LikedPost.Post);
 
     if (posts.length === 0) {
       return res.status(200).json({ data: [] }); // 빈 배열 반환
@@ -179,7 +182,7 @@ router.get("/posts/like", authMiddleware, async (req, res) => {
     return res.status(200).json({ data: posts });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "서버 오류" });
+    return res.status(500).json({ errorMessage: "서버 오류" });
   }
 });
 
