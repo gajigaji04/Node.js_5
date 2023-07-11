@@ -128,6 +128,7 @@ router.post("/posts/:postId/like", authMiddleware, async (req, res) => {
       where: { postId: postId },
     });
 
+    // 게시글이 존재하지 않을 경우 반환
     if (!post) {
       return res
         .status(404)
@@ -173,12 +174,15 @@ router.get("/like", authMiddleware, async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
+    // ".map()" 함수를 이용 => 게시물 객체 추출
     const posts = LikedPosts.map((likedPost) => likedPost.Post);
 
+    // 좋아요를 누른 게시물이 없는 경우 빈 배열 반환
     if (posts.length === 0) {
       return res.status(200).json({ data: [] }); // 빈 배열 반환
     }
 
+    // 데이터베이스 쿼리 중 오류 발생, 다른 서버 오류 발생 시 500 상태 코드 반환
     return res.status(200).json({ data: posts });
   } catch (error) {
     console.error(error);
