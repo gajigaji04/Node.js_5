@@ -119,7 +119,7 @@ router.delete("/posts/:postId", authMiddleware, async (req, res) => {
 });
 
 // 좋아요 설정
-router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
+router.post("/posts/:postId/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
   const { postId } = req.params;
 
@@ -160,7 +160,7 @@ router.put("/posts/:postId/like", authMiddleware, async (req, res) => {
 });
 
 // 좋아요 게시글 조회
-router.get("/posts/like", authMiddleware, async (req, res) => {
+router.get("/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
 
   try {
