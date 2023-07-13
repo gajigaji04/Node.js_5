@@ -1,5 +1,3 @@
-// services/posts.service.js
-
 const PostRepository = require("../repositories/posts.repository");
 
 class PostService {
@@ -17,6 +15,7 @@ class PostService {
     // 비즈니스 로직을 수행한 후 사용자에게 보여줄 데이터를 가공합니다.
     return allPost.map((post) => {
       return {
+        userId: post.userId,
         postId: post.postId,
         nickname: post.nickname,
         title: post.title,
@@ -37,6 +36,7 @@ class PostService {
 
     // 비즈니스 로직을 수행한 후 사용자에게 보여줄 데이터를 가공합니다.
     return {
+      userId: createPostData.null,
       postId: createPostData.null,
       nickname: createPostData.nickname,
       title: createPostData.title,
