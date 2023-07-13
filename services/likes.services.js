@@ -7,7 +7,7 @@ class LikeService {
     // 저장소(Repository)에게 데이터를 요청합니다.
     const allLike = await this.likeRepository.findAllLike();
 
-    // 호출한 Post들을 가장 최신 게시글 부터 정렬합니다.
+    // 호출한 Like를 가장 최신 게시글 부터 정렬합니다.
     allLike.sort((a, b) => {
       return b.createdAt - a.createdAt;
     });

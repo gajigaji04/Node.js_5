@@ -7,7 +7,7 @@ class CommentService {
     // 저장소(Repository)에게 데이터를 요청합니다.
     const allComment = await this.commentRepository.findAllComment();
 
-    // 호출한 Post들을 가장 최신 게시글 부터 정렬합니다.
+    // 호출한 Comment들을 가장 최신 게시글 부터 정렬합니다.
     allComment.sort((a, b) => {
       return b.createdAt - a.createdAt;
     });
@@ -26,7 +26,14 @@ class CommentService {
     });
   };
 
-  createComment = async (title, content) => {
+  createComment = async (
+    userId,
+    postId,
+    commentId,
+    title,
+    createdAt,
+    updatedAt
+  ) => {
     // 저장소(Repository)에게 데이터를 요청합니다.
     const createCommentData = await this.commentRepository.createComment(
       userId,

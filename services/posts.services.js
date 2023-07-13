@@ -1,4 +1,5 @@
 const PostRepository = require("../repositories/posts.repository");
+const PostsController = require("../controllers/posts.controller");
 
 class PostService {
   postRepository = new PostRepository();
