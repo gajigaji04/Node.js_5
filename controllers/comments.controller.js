@@ -1,30 +1,82 @@
+const { where } = require("sequelize");
 const CommentService = require("../services/comments.service");
 
 // Comment의 컨트롤러(Controller)역할을 하는 클래스
 class CommentsController {
-  commentService = new CommentService(); // Comment 서비스를 클래스를 컨트롤러 클래스의 멤버 변수로 할당합니다.
+  constructor() {
+    this.commentService = new CommentService();
+  }
 
+  // 댓글 생성
+  createComment = async (req, res, next) => {
+    const { userId } = res.locals.user;
+    const { postId } = req.params;
+    const { comment } = req.body;
+
+    const createCommentData = await this.commentService.createComment(
+      userId,
+      postId,
+      comment
+    );
+
+    res.status(201).json({ data: createCommentData });
+  };
+
+  // 댓글 목록 조회
   getComments = async (req, res, next) => {
-    // 서비스 계층에 구현된 findAllComment 로직을 실행합니다.
-    const comments = await this.postService.findAllComment();
+    const comments = await this.commentService.findAllComment();
 
     res.status(200).json({ data: comments });
   };
 
-  createComment = async (req, res, next) => {
-    const { userId, postId, commentId, title, createdAt, updatedAt } = req.body;
+  // 댓글 상세조회
+  getComment = async (req, res, next) => {
+    const commentId = req.params.id;
+    const comment = await this.commentService.findOneComment(commentId);
 
-    // 서비스 계층에 구현된 createComment 로직을 실행합니다.
-    const createCommentData = await this.commentService.createComment(
-      userId,
-      postId,
-      commentId,
-      title,
-      createdAt,
-      updatedAt
-    );
+    res.status(200).json({ data: comment });
+  };
 
-    res.status(201).json({ data: createCommentData });
+  // 댓글 수정
+  updateComment = async (req, res, next) => {
+    const { postId, commentId } = req.params;
+    const { userId } = res.locals.user;
+    const { comment } = req.body;
+
+    const existingComment = await this.commentService.findOneComment(commentId);
+
+    if (!existingComment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    if (existingComment.userId !== userId) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    existingComment.comment = comment;
+    await existingComment.save();
+
+    res.status(200).json({ data: existingComment });
+  };
+
+  // 댓글 삭제
+  deleteComment = async (req, res, next) => {
+    const { postId, commentId } = req.params;
+    const { userId } = res.locals.user;
+
+    const existingComment = await this.commentService.findOneComment(commentId);
+
+    if (!existingComment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    if (existingComment.userId !== userId) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    await existingComment.destroy();
+
+    res.status(204).end();
   };
 }
 
