@@ -1,3 +1,5 @@
+// models/posts.js
+
 "use strict";
 const { Model } = require("sequelize");
 
@@ -27,6 +29,11 @@ module.exports = (sequelize, DataTypes) => {
       content: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      likedPostsCount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
       },
       createdAt: {
         type: DataTypes.DATE,

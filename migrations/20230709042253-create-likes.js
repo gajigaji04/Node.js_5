@@ -11,9 +11,16 @@ module.exports = {
       },
       UserId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
       },
       PostId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      likedPostsCount: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
       },
       createdAt: {
         allowNull: false,
