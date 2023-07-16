@@ -1,11 +1,14 @@
 "use strict";
 const { Model } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class Likes extends Model {
     static associate(models) {
-      // define association here
+      Likes.belongsTo(models.Users, { foreignKey: "UserId" });
+      Likes.belongsTo(models.Posts, { foreignKey: "PostId" });
     }
   }
+
   Likes.init(
     {
       UserId: {
@@ -18,7 +21,8 @@ module.exports = (sequelize, DataTypes) => {
       },
       likedPostsCount: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
+        defaultValue: 0, // Set a default value for likedPostsCount
       },
     },
     {
@@ -26,5 +30,6 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Likes",
     }
   );
+
   return Likes;
 };
