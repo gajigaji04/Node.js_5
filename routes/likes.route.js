@@ -67,7 +67,14 @@ router.get("/like", authMiddleware, async (req, res) => {
       where: { UserId: userId },
       include: {
         model: Posts,
-        attributes: ["postId", "title", "content", "createdAt", "updatedAt"],
+        attributes: [
+          "postId",
+          "title",
+          "content",
+          "likedPostsCount",
+          "createdAt",
+          "updatedAt",
+        ],
       },
       order: [["createdAt", "DESC"]],
     });
