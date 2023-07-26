@@ -8,8 +8,6 @@ router.post("/posts/:postId/like", authMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
   const { postId } = req.params;
 
-  let likedPostsCount = 0;
-
   try {
     const post = await Posts.findOne({
       where: { postId: postId },
@@ -32,28 +30,28 @@ router.post("/posts/:postId/like", authMiddleware, async (req, res) => {
         where: { UserId: userId, PostId: postId },
       });
 
-      // 좋아요 카운트 -1
-      const decrementLikedPostsCount = function () {
-        likedPostsCount = likedPostsCount - 1;
-        return likedPostsCount;
-      };
-
-      return res
-        .status(200)
-        .json({ message: "게시글 좋아요를 취소하였습니다.", likedPostsCount });
+      // 좋아요 카운트 감소
+      await post.decrement("likedPostsCount");
     } else {
       await Likes.create({ UserId: userId, PostId: postId });
 
-      // 좋아요 카운트 +1
-      const incrementLikedPostsCount = function () {
-        likedPostsCount = likedPostsCount + 1;
-        return likedPostsCount;
-      };
-
-      return res
-        .status(200)
-        .json({ message: "게시글 좋아요를 등록하였습니다.", likedPostsCount });
+      // 좋아요 카운트 증가
+      await post.increment("likedPostsCount");
     }
+
+    // 업데이트된 게시글 조회
+    const updatedPost = await Posts.findOne({
+      where: { postId: postId },
+    });
+
+    const likedPostsCount = updatedPost.likedPostsCount;
+
+    return res.status(200).json({
+      message: existingLike
+        ? "게시글 좋아요를 취소하였습니다."
+        : "게시글 좋아요를 등록하였습니다.",
+      likedPostsCount: likedPostsCount,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ errorMessage: "서버 오류" });
@@ -69,7 +67,14 @@ router.get("/like", authMiddleware, async (req, res) => {
       where: { UserId: userId },
       include: {
         model: Posts,
-        attributes: ["postId", "title", "content", "createdAt", "updatedAt"],
+        attributes: [
+          "postId",
+          "title",
+          "content",
+          "likedPostsCount",
+          "createdAt",
+          "updatedAt",
+        ],
       },
       order: [["createdAt", "DESC"]],
     });
